@@ -1,4 +1,4 @@
-name: blank
+name: AvicaRDP
 on:
   workflow_dispatch:
   schedule:
@@ -64,6 +64,12 @@ jobs:
           
           ⏳ Waiting for GoFile link...
           " -ForegroundColor Cyan
+          
+      - name: Wait for 5 Minutes
+        run: |
+          Write-Host "⏳ Waiting for 5 minutes before starting Avica service..." -ForegroundColor Yellow
+          Start-Sleep -Seconds 300
+          Write-Host "✅ Wait completed!" -ForegroundColor Green
           
       - name: Start Avica Service
         run: cmd /c show.bat
