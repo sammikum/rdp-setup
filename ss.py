@@ -1,108 +1,67 @@
 import pyautogui as pag
-import requests
+import subprocess
 import time
 import os
-from datetime import datetime
-import win32gui
-import win32con
 
 # Configuration
-SCREENSHOT_DIR = "screenshots"
-SCREENSHOT_PREFIX = "screenshot"
-GOFILE_API_URL = "https://store1.gofile.io/uploadFile"
-DELAY = 0.5  # Reduced delay for faster execution
+AVICA_EXE_PATH = r"C:\Program Files (x86)\Avica\Avica.exe"  # Adjust if needed
+BUTTON_IMAGE = "screenshot_button.png"  # Small PNG of the "Screenshot" button
+DELAY_AFTER_LAUNCH = 5  # Seconds to wait for app to load
+CONFIDENCE = 0.8  # Matching confidence for image detection (0.8 = 80%)
 
-# Ensure screenshot directory exists
-if not os.path.exists(SCREENSHOT_DIR):
-    os.makedirs(SCREENSHOT_DIR)
+# Safety: Fail-safe to stop script if mouse moves to top-left corner
+pag.FAILSAFE = True
+pag.PAUSE = 1  # Pause between actions
 
-# Minimize specific windows by title
-def minimize_windows():
+def launch_avica():
+    """Launch Avica.exe using subprocess."""
     try:
-        def minimize_window(title_contains):
-            hwnd = win32gui.FindWindow(None, None)
-            while hwnd:
-                title = win32gui.GetWindowText(hwnd)
-                if title_contains.lower() in title.lower() and win32gui.IsWindowVisible(hwnd):
-                    win32gui.ShowWindow(hwnd, win32con.SW_MINIMIZE)
-                    print(f"Minimized window: {title}")
-                    return True
-                hwnd = win32gui.GetWindow(hwnd, win32con.GW_HWNDNEXT)
-            return False
-
-        # Minimize Command Prompt and PowerShell
-        minimized_cmd = minimize_window("Command Prompt") or minimize_window("cmd.exe")
-        minimized_ps = minimize_window("PowerShell")
+        if not os.path.exists(AVICA_EXE_PATH):
+            raise FileNotFoundError(f"Avica.exe not found at {AVICA_EXE_PATH}. Check install path.")
         
-        if not minimized_cmd:
-            print("Command Prompt window not found.")
-        if not minimized_ps:
-            print("PowerShell window not found.")
-        
+        subprocess.Popen(AVICA_EXE_PATH)
+        print("Avica launched successfully.")
+        time.sleep(DELAY_AFTER_LAUNCH)  # Wait for UI to appear
     except Exception as e:
-        print(f"Failed to minimize windows: {e}")
+        print(f"Failed to launch Avica: {e}")
+        return False
+    return True
 
-# Take a screenshot and save it
-def take_screenshot():
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = os.path.join(SCREENSHOT_DIR, f"{SCREENSHOT_PREFIX}_{timestamp}.png")
+def click_screenshot_button():
+    """Locate and click the 'Screenshot' button using image recognition."""
     try:
-        screenshot = pag.screenshot()
-        screenshot.save(filename)
-        if os.path.exists(filename):
-            print(f"Screenshot saved as {filename}.")
-            return filename
+        if not os.path.exists(BUTTON_IMAGE):
+            raise FileNotFoundError(f"Button image '{BUTTON_IMAGE}' not found. Capture it from Avica UI.")
+        
+        # Search for the button on screen
+        button_location = pag.locateOnScreen(BUTTON_IMAGE, confidence=CONFIDENCE)
+        if button_location:
+            # Click the center of the button
+            pag.click(pag.center(button_location))
+            print("Clicked 'Screenshot' button successfully.")
+            time.sleep(2)  # Wait for screenshot dialog/action
+            return True
         else:
-            raise Exception("Screenshot file not created.")
+            print("Screenshot button not found. Trying coordinate fallback (adjust coords as needed).")
+            # Fallback: Hardcoded coords (example: toolbar position; update based on your screen)
+            # pag.click(100, 50)  # Uncomment and set x,y for button center
+            return False
     except Exception as e:
-        print(f"Failed to take screenshot: {e}")
-        return None
+        print(f"Failed to click button: {e}")
+        return False
 
-# Upload the screenshot to Gofile
-def upload_to_gofile(filepath):
-    try:
-        with open(filepath, 'rb') as file:
-            files = {'file': file}
-            response = requests.post(GOFILE_API_URL, files=files, timeout=10)
-            response.raise_for_status()
-
-            result = response.json()
-            if result['status'] == 'ok':
-                download_page = result['data']['downloadPage']
-                print(f"Screenshot uploaded successfully. Link: {download_page}")
-                return download_page
-            else:
-                print(f"Upload error: {result.get('status')}")
-                return None
-    except Exception as e:
-        print(f"Failed to upload screenshot: {e}")
-        return None
-
-# Main function
 def main():
-    try:
-        # Minimize windows
-        minimize_windows()
-        time.sleep(DELAY)  # Brief pause to ensure windows are minimized
-
-        # Take screenshot
-        screenshot_filename = take_screenshot()
-        if not screenshot_filename:
-            print("Exiting due to screenshot failure.")
-            return
-
-        # Upload to Gofile
-        gofile_link = upload_to_gofile(screenshot_filename)
-        
-        # Clean up only if upload was successful
-        if gofile_link and os.path.exists(screenshot_filename):
-            os.remove(screenshot_filename)
-            print(f"Temporary screenshot file {screenshot_filename} removed.")
-        elif not gofile_link:
-            print(f"Keeping screenshot file {screenshot_filename} due to upload failure.")
-
-    except Exception as e:
-        print(f"Script failed: {e}")
+    print("Starting Avica automation...")
+    
+    # Step 1: Launch Avica
+    if not launch_avica():
+        return
+    
+    # Step 2: Click Screenshot button (assumes app is focused)
+    # Note: You may need to manually connect to a remote session first for the button to appear
+    click_screenshot_button()
+    
+    print("Automation complete. Check Avica for the screenshot.")
 
 if __name__ == "__main__":
     main()
