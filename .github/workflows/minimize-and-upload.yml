@@ -1,92 +1,28 @@
-name: MinimizeCMDAndUploadScreenshot
+name: Minimize CMD and PowerShell, Take Screenshot, and Upload to Gofile
 
 on:
   workflow_dispatch: # Trigger workflow manually
 
 jobs:
   minimize-and-upload:
-    name: Minimize CMD and Upload Screenshot
+    name: Minimize CMD and PowerShell, Take Screenshot, and Upload
     runs-on: windows-latest
-    timeout-minutes: 30  # Limit to 30 minutes
+    timeout-minutes: 30
 
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: 3.9
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install pyautogui requests
 
       - name: Run Python Script
         run: |
-          python - <<EOF
-          import pyautogui as pag
-          import requests
-          import time
-
-          # Minimize the Command Prompt
-          def minimize_cmd():
-              try:
-                  pag.hotkey('alt', 'space')  # Open window menu
-                  time.sleep(1)
-                  pag.press('n')  # Minimize
-                  print("Command Prompt minimized successfully.")
-              except Exception as e:
-                  print(f"Failed to minimize Command Prompt: {e}")
-
-          # Take a screenshot and save it
-          def take_screenshot(filename):
-              try:
-                  screenshot = pag.screenshot()
-                  screenshot.save(filename)
-                  print(f"Screenshot saved as {filename}.")
-              except Exception as e:
-                  print(f"Failed to take screenshot: {e}")
-
-          # Upload the screenshot to Gofile
-          def upload_to_gofile(filepath):
-              url = 'https://store1.gofile.io/uploadFile'
-              try:
-                  with open(filepath, 'rb') as file:
-                      files = {'file': file}
-                      response = requests.post(url, files=files)
-                      response.raise_for_status()  # Raise an error for HTTP issues
-
-                      result = response.json()
-                      if result['status'] == 'ok':
-                          download_page = result['data']['downloadPage']
-                          with open('output.txt', 'w') as f:  # Redirect output to a file
-                              f.write(f"Screenshot uploaded successfully. Link: {download_page}\n")
-                          print(f"Screenshot uploaded successfully. Link: {download_page}")
-                          return download_page
-                      else:
-                          print("Upload error:", result.get('status'))
-                          return None
-              except Exception as e:
-                  print(f"Failed to upload screenshot: {e}")
-                  return None
-
-          # Main function
-          def main():
-              screenshot_filename = 'cmd_screenshot.png'
-
-              # Minimize the cmd window
-              minimize_cmd()
-
-              # Take a screenshot
-              take_screenshot(screenshot_filename)
-
-              # Upload the screenshot to Gofile
-              gofile_link = upload_to_gofile(screenshot_filename)
-              if gofile_link:
-                  print(f"Gofile Link: {gofile_link}")
-
-          if __name__ == "__main__":
-              main()
-          EOF
-
-      - name: Show Output File
-        run: type output.txt
+          python ss.py
