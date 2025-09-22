@@ -58,6 +58,8 @@ jobs:
                       result = response.json()
                       if result['status'] == 'ok':
                           download_page = result['data']['downloadPage']
+                          with open('output.txt', 'w') as f:  # Redirect output to a file
+                              f.write(f"Screenshot uploaded successfully. Link: {download_page}\n")
                           print(f"Screenshot uploaded successfully. Link: {download_page}")
                           return download_page
                       else:
@@ -85,3 +87,6 @@ jobs:
           if __name__ == "__main__":
               main()
           EOF
+
+      - name: Show Output File
+        run: type output.txt
