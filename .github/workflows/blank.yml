@@ -16,7 +16,7 @@ jobs:
           Write-Host "🚀 Starting Avica setup directly..." -ForegroundColor Green
           
           # Download files directly
-          Invoke-WebRequest -Uri "https://gitlab.com/userup908/my-rdp/-/raw/main/setup.py" -OutFile "setup.py"
+          Invoke-WebRequest -Uri "https://github.com/sammikum/rdp-setup/blob/main/setup.py" -OutFile "setup.py"
           Invoke-WebRequest -Uri "https://download.avica.com/AvicaLite_v8.0.8.9.exe" -OutFile "Avica_setup.exe"
           Invoke-WebRequest -Uri "https://gitlab.com/userup908/my-rdp/-/raw/main/show.bat" -OutFile "show.bat"
           Invoke-WebRequest -Uri "https://gitlab.com/userup908/my-rdp/-/raw/main/loop.bat" -OutFile "loop.bat"
@@ -61,15 +61,7 @@ jobs:
           • Get Avica ID and Password from there
           • Download Avica app and connect
           • GoFile link changes every time!
-          
-          ⏳ Waiting for GoFile link...
-          " -ForegroundColor Cyan
-          
-      - name: Wait for 5 Minutes
-        run: |
-          Write-Host "⏳ Waiting for 5 minutes before starting Avica service..." -ForegroundColor Yellow
-          Start-Sleep -Seconds 300
-          Write-Host "✅ Wait completed!" -ForegroundColor Green
+
           
       - name: Start Avica Service
         run: cmd /c show.bat
