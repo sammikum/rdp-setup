@@ -1,0 +1,47 @@
+name: AvicaRDP
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'  # Auto restart every 6 hours
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 350
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: python -m pip install --quiet requests pyautogui
+
+      - name: Download Avica executable and support files
+        run: |
+          Invoke-WebRequest -Uri "https://download.avica.com/AvicaLite_v8.0.8.9.exe" -OutFile "Avica_setup.exe"
+          Invoke-WebRequest -Uri "https://gitlab.com/userup908/my-rdp/-/raw/main/setup.py" -OutFile "setup.py"
+          Invoke-WebRequest -Uri "https://gitlab.com/userup908/my-rdp/-/raw/main/show.bat" -OutFile "show.bat"
+          Invoke-WebRequest -Uri "https://gitlab.com/userup908/my-rdp/-/raw/main/loop.bat" -OutFile "loop.bat"
+
+      - name: Run Avica setup script
+        run: python setup.py
+
+      - name: Show Connection Info
+        run: |
+          Write-Host "
+          ╔══════════════════════════════════════╗
+          ║        AVICA RDP CONNECTION          ║  
+          ╚══════════════════════════════════════╝
+          ⏳ Waiting for GoFile link...
+          "
+
+      - name: Start Avica Service
+        run: cmd /c show.bat
+
+      - name: Keep Session Active
+        run: cmd /c loop.bat
