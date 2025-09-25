@@ -4,22 +4,21 @@ import requests
 import os
 import subprocess
 
-# Initial wait time to prepare environment
+# Initial wait time
 time.sleep(40)
 
-# Define click actions as tuples: (x, y, duration)
 actions = [
-    (516, 405, 4),  # install button (wait 4 sec)
-    (50, 100, 1),   # click to launch Avica app
-    (496, 438, 4),  # Later Update button
-    (249, 203, 4),  # allow RDP (multiple clicks)
+    (516, 405, 4),  # install
+    (50, 100, 1),   # launch Avica
+    (496, 438, 4),  # later update
+    (249, 203, 4),  # allow RDP button (multiple clicks)
     (249, 203, 4),
     (249, 203, 4),
     (249, 203, 4),
-    (447, 286, 4),  # ss id & upload (launch avica and screenshot)
+    (447, 286, 4),  # ss id & upload (take screenshot and upload)
 ]
 
-time.sleep(10)  # Time to focus on the target app window
+time.sleep(10)
 
 img_filename = 'NewAvicaRemoteID.png'
 
@@ -50,17 +49,18 @@ for x, y, duration in actions:
         pag.click(x, y, duration=duration)
 
     if (x, y) == (447, 286):
-        # Correct path with quotes around "Program Files (x86)"
-        avica_path = r'"C:\Program Files (x86)\Avica\Avica.exe"'
+        avica_exe = os.path.join(os.getcwd(), "Avica_setup.exe")
         try:
-            # Using subprocess to open Avica.exe without blocking
-            subprocess.Popen(avica_path)
+            # Start Avica from current directory
+            subprocess.Popen([avica_exe])
         except Exception as e:
             print(f"Failed to start Avica: {e}")
+
         time.sleep(5)
         pag.click(249, 203, duration=4)
         time.sleep(10)
         pag.screenshot().save(img_filename)
+
         gofile_link = upload_image_to_gofile(img_filename)
         if gofile_link:
             print(f"Image uploaded successfully. Link: {gofile_link}")
