@@ -13,13 +13,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup Python
+      - name: Setup Python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: '3.11'
 
       - name: Install dependencies
-        run: python -m pip install --quiet requests pyautogui
+        run: python -m pip install --quiet pyautogui pyscreeze Pillow requests
 
       - name: Download Avica executable and support files
         run: |
