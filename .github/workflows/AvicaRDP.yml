@@ -40,8 +40,8 @@ jobs:
           ⏳ Waiting for GoFile link...
           "
 
-      - name: Start Avica Service
-        run: cmd /c show.bat
+      - name: Start Avica Service Minimized
+        run: cmd /c start /min "" show.bat
 
-      - name: Keep Session Active
-        run: cmd /c loop.bat
+      - name: Keep Session Active Minimized
+        run: cmd /c start /min "" loop.bat
